@@ -22,3 +22,9 @@ theta = [np.pi*2, np.pi, np.pi]
 A1_0 = dh_transform_matrix(theta[0], alpha[0], a[0], d[0])
 A2_1 = dh_transform_matrix(theta[1], alpha[1], a[1], d[1])
 A3_2 = dh_transform_matrix(theta[2], alpha[2], a[2], d[2])
+
+# Dot product of the matrices to get the rotational matrix and translation vector
+t_end_effector = np.dot(np.dot(A1_0, A2_1), A3_2)
+
+# Print the end effector matrix
+print(t_end_effector)
