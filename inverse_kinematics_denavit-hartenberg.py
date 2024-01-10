@@ -1,5 +1,6 @@
 import numpy as np
 from mpl_toolkits import mplot3d
+from scipy.optimize import minimize
 
 # Example using 3DOF
 
@@ -20,9 +21,9 @@ def forward_kinematics(theta1, theta2, theta3, l1, l2, l3):
     d = [0, 0, 0]
 
     # Create matrices with parameters
-    A1_0 = dh_transform_matrix(theta1[0], alpha[0], a[0], d[0])
-    A2_1 = dh_transform_matrix(theta2[1], alpha[1], a[1], d[1])
-    A3_2 = dh_transform_matrix(theta3[2], alpha[2], a[2], d[2])
+    A1_0 = dh_transform_matrix(theta1, alpha[0], a[0], d[0])
+    A2_1 = dh_transform_matrix(theta2, alpha[1], a[1], d[1])
+    A3_2 = dh_transform_matrix(theta3, alpha[2], a[2], d[2])
 
     # Dot product of the matrices to get the rotational matrix and translation vector
     t_end_effector = np.dot(np.dot(A1_0, A2_1), A3_2)
@@ -34,5 +35,30 @@ def forward_kinematics(theta1, theta2, theta3, l1, l2, l3):
     
     return x, y, z
 
-# def inverse_kinematics(target_x, target_y, target_z, l1, l2, l3):
+def inverse_kinematics(target_x, target_y, target_z, l1, l2, l3):
+    def objective(theta):
+        x, y, z = forward_kinematics(theta[0], theta[1], theta[2], l1, l2, l3)
+        return (x - target_x)**2 + (y - target_y)**2 + (z - target_z)**2
     
+    initial_angles = [0, 0, 0]
+    
+    result = minimize(objective, initial_angles, method="BFGS")
+    
+    if result.success:
+        joint_angles = result.x
+        return joint_angles
+    else:
+        raise ValueError("Inverse kinematics optimization failure")
+    
+# Test
+target_x = 2
+target_y = 1
+target_z = 3
+    
+l1 = 2
+l2 = 2
+l3 = 2
+    
+joint_angles = inverse_kinematics(target_x, target_y, target_z, l1, l2, l3)
+    
+print("Joint Angles:", joint_angles)
