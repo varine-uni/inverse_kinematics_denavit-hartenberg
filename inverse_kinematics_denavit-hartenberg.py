@@ -12,19 +12,27 @@ def dh_transform_matrix(theta, alpha, a, d):
         [0, 0, 0, 1]
     ])
     
-# Define DH parameters
-alpha = [0, 0, 0]
-a = [2, 0, 2]
-d = [0, 0, 0]
-theta = [np.pi*2, np.pi, np.pi]
+# Forward kinematic function, inputs 3 angles and 3 segment lengths
+def forward_kinematics(theta1, theta2, theta3, l1, l2, l3):
+    # Define DH parameters
+    alpha = [0, 0, 0]
+    a = [l1, l2, l3]
+    d = [0, 0, 0]
 
-# Create matrices with parameters
-A1_0 = dh_transform_matrix(theta[0], alpha[0], a[0], d[0])
-A2_1 = dh_transform_matrix(theta[1], alpha[1], a[1], d[1])
-A3_2 = dh_transform_matrix(theta[2], alpha[2], a[2], d[2])
+    # Create matrices with parameters
+    A1_0 = dh_transform_matrix(theta1[0], alpha[0], a[0], d[0])
+    A2_1 = dh_transform_matrix(theta2[1], alpha[1], a[1], d[1])
+    A3_2 = dh_transform_matrix(theta3[2], alpha[2], a[2], d[2])
 
-# Dot product of the matrices to get the rotational matrix and translation vector
-t_end_effector = np.dot(np.dot(A1_0, A2_1), A3_2)
+    # Dot product of the matrices to get the rotational matrix and translation vector
+    t_end_effector = np.dot(np.dot(A1_0, A2_1), A3_2)
+    
+    # Extract positions from the matrix
+    x = t_end_effector[0, 3]
+    y = t_end_effector[1, 3]
+    z = t_end_effector[2, 3]
+    
+    return x, y, z
 
-# Print the end effector matrix
-print(t_end_effector)
+# def inverse_kinematics(target_x, target_y, target_z, l1, l2, l3):
+    
