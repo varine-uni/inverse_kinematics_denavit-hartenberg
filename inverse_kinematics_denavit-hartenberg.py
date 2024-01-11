@@ -49,7 +49,7 @@ def inverse_kinematics(target_x, target_y, target_z, l1, l2, l3):
     result = minimize(objective, initial_angles, method="BFGS")
     
     if result.success:
-        joint_angles = result.x + 1e-6
+        joint_angles = result.x + 1e-2
         return joint_angles
     else:
         raise ValueError("Inverse kinematics optimization failure")
