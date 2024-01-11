@@ -18,7 +18,7 @@ def forward_kinematics(theta1, theta2, theta3, l1, l2, l3):
     # Define DH parameters
     alpha = [0, 0, 0]
     a = [l1, l2, l3]
-    d = [0, 0, 0]
+    d = [3, 0, -3]
 
     # Create matrices with parameters
     A1_0 = dh_transform_matrix(theta1, alpha[0], a[0], d[0])
@@ -55,13 +55,13 @@ def inverse_kinematics(target_x, target_y, target_z, l1, l2, l3):
         raise ValueError("Inverse kinematics optimization failure")
     
 # Test
-target_x = 1.4
-target_y = 0.5
-target_z = 0.5
+target_x = -2
+target_y = -2
+target_z = 2
     
-l1 = 0.5
+l1 = 1
 l2 = 1
-l3 = 1
+l3 = 0.1
     
 joint_angles = inverse_kinematics(target_x, target_y, target_z, l1, l2, l3)
     
@@ -80,6 +80,6 @@ print(x1, y1, z1, x2, y2, z2, x3, y3, z3)
 # Plot the arm segment by segment
 ax.plot([0, x1], [0, y1], [0, z1], 'bo-')
 ax.plot([x1, x2], [y1, y2], [z1, z2], 'go-')
-ax.plot([x2, x3], [y2, y3], [z2, z3], 'ro-')
+ax.plot([x2, x3], [y2, y3], [z2, target_z], 'ro-')
 
 plt.show()
