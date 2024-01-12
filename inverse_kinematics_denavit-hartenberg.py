@@ -61,7 +61,7 @@ def inverse_kinematics(target_x, target_y, target_z, l1, l2):
 # Test
 target_x = 2
 target_y = 2
-target_z = 2
+target_z = 3
     
 l1 = 3
 l2 = 3
