@@ -20,7 +20,7 @@ def forward_kinematics(theta1, theta2, theta3, l1, l2):
     # Define DH parameters
     alpha = [np.pi/2, 0, 0]
     a = [0, l1, l2]
-    d = [l1, 0, 0]
+    d = [0, l1, 0]
 
     # Create matrices with parameters
     A1_0 = dh_transform_matrix(theta1, alpha[0], a[0], d[0])
@@ -88,11 +88,12 @@ p.resetDebugVisualizerCamera(cameraDistance=4.5, cameraYaw=-90, cameraPitch=-10,
 while True:
     target_x = 2
     target_y = 2
-    target_z = 0
+    target_z = 1
     
     l1 = 1
     l2 = 1
     
+    # Calculate joint angles
     joint_angles = inverse_kinematics(target_x, target_y, target_z, l1, l2)
     
     # Set joint angles for the robot
