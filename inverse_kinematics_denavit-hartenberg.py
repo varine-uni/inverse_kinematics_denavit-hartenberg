@@ -1,6 +1,8 @@
+import os
+import time
+import pybullet as p
 import numpy as np
 from scipy.optimize import minimize
-#import pybullet as p
 
 # Example using 3DOF
 
@@ -16,27 +18,19 @@ def dh_transform_matrix(theta, alpha, a, d):
 # Forward kinematic function, inputs 3 angles and 2 segment lengths
 def forward_kinematics(theta1, theta2, theta3, l1, l2):
     # Define DH parameters
-    alpha = [0, np.pi/2, 0]
+    alpha = [np.pi/2, 0, 0]
     a = [0, l1, l2]
-    d = [0, 0, 0]
+    d = [l1, 0, 0]
 
     # Create matrices with parameters
     A1_0 = dh_transform_matrix(theta1, alpha[0], a[0], d[0])
     A2_1 = dh_transform_matrix(theta2, alpha[1], a[1], d[1])
     A3_2 = dh_transform_matrix(theta3, alpha[2], a[2], d[2])
-
-    #print("A1:", A1_0)
-    #print("A2:", A2_1)
-    #print("A3:", A3_2)
     
     # Dot product of the matrices to get the rotational matrix and translation vector
     t_end_effector_1 = A1_0
     t_end_effector_2 = np.dot(t_end_effector_1, A2_1)
     t_end_effector_3 = np.dot(t_end_effector_2, A3_2)
-    
-    #print(t_end_effector_1)
-    #print(t_end_effector_2)
-    #print(t_end_effector_3)
     
     # Extract positions from the matrices
     x1, y1, z1 = t_end_effector_1[0, 3], t_end_effector_1[1, 3], t_end_effector_1[2, 3]
@@ -48,7 +42,10 @@ def forward_kinematics(theta1, theta2, theta3, l1, l2):
 def inverse_kinematics(target_x, target_y, target_z, l1, l2):
     def objective(theta):
         x1, y1, z1, x2, y2, z2, x3, y3, z3 = forward_kinematics(theta[0], theta[1], theta[2], l1, l2)
-        return (x3 - target_x)**2 + (y3 - target_y)**2 + (z3 - target_z)**2
+        error_x = (x1 - target_x)**2 + (x2 - target_x)**2 + (x3 - target_x)**2
+        error_y = (y1 - target_y)**2 + (y2 - target_y)**2 + (y3 - target_y)**2
+        error_z = (z1 - target_z)**2 + (z2 - target_z)**2 + (z3 - target_z)**2
+        return error_x + error_y + error_z
         
     result = minimize(objective, [0, 0, 0], method="BFGS")
     
@@ -58,21 +55,49 @@ def inverse_kinematics(target_x, target_y, target_z, l1, l2):
     else:
         raise ValueError("Inverse kinematics optimization failure")
     
-# Test
-target_x = 2
-target_y = 2
-target_z = 3
-    
-l1 = 3
-l2 = 3
-    
-joint_angles = inverse_kinematics(target_x, target_y, target_z, l1, l2)
-    
-print("Joint Angles:", joint_angles)
+# print("Joint Angles:", joint_angles)
 
-# Calculate forward kinematics
-x1, y1, z1, x2, y2, z2, x3, y3, z3 = forward_kinematics(joint_angles[0], joint_angles[1], joint_angles[2], l1, l2)
+# # Calculate forward kinematics
+# x1, y1, z1, x2, y2, z2, x3, y3, z3 = forward_kinematics(joint_angles[0], joint_angles[1], joint_angles[2], l1, l2)
 
-# End effector final coords
-print("x:", x3, "y:", y3, "z:", z3)
+# # End effector final coords
+# print("x:", x3, "y:", y3, "z:", z3)
+
+# Connect to the PyBullet physics server
+p.connect(p.GUI)
+p.setGravity(0, 0, -98)  # Set gravity along the negative Z-axis
+
+# Create a flat plane
+plane_id = p.createCollisionShape(p.GEOM_PLANE)
+plane_body_id = p.createMultiBody(0, plane_id)
+
+# Get the absolute path to the URDF file in the same folder as the script
+script_folder = os.path.dirname(os.path.abspath(__file__))
+robot_urdf_path = os.path.join(script_folder, "basic_arm_bot.urdf")
+
+# Load the robot URDF
+robot_start_pos = [0, 0, 0]  # Adjust the starting position as needed
+robot_start_orientation = p.getQuaternionFromEuler([0, 0, 0])  # Adjust the orientation as needed
+robot_id = p.loadURDF(robot_urdf_path, basePosition=robot_start_pos, baseOrientation=robot_start_orientation)
+
+
+# Set up the camera
+p.resetDebugVisualizerCamera(cameraDistance=4.5, cameraYaw=-90, cameraPitch=-10, cameraTargetPosition=[0, 0, 0])
+
+# Simulation loop
+while True:
+    target_x = 2
+    target_y = 2
+    target_z = 0
     
+    l1 = 1
+    l2 = 1
+    
+    joint_angles = inverse_kinematics(target_x, target_y, target_z, l1, l2)
+    
+    # Set joint angles for the robot
+    for i, joint_angle in enumerate(joint_angles):
+        p.setJointMotorControl2(robot_id, i, p.POSITION_CONTROL, joint_angle)
+    
+    p.stepSimulation()
+    time.sleep(1. / 240.)
