@@ -39,6 +39,7 @@ def forward_kinematics(theta1, theta2, theta3, l1, l2):
     
     return x1, y1, z1, x2, y2, z2, x3, y3, z3
 
+# This code defines an optimization objective function to minimize the squared errors between the end-effector position and targeted position
 def inverse_kinematics(target_x, target_y, target_z, l1, l2):
     def objective(theta):
         x1, y1, z1, x2, y2, z2, x3, y3, z3 = forward_kinematics(theta[0], theta[1], theta[2], l1, l2)
@@ -55,14 +56,6 @@ def inverse_kinematics(target_x, target_y, target_z, l1, l2):
     else:
         raise ValueError("Inverse kinematics optimization failure")
     
-# print("Joint Angles:", joint_angles)
-
-# # Calculate forward kinematics
-# x1, y1, z1, x2, y2, z2, x3, y3, z3 = forward_kinematics(joint_angles[0], joint_angles[1], joint_angles[2], l1, l2)
-
-# # End effector final coords
-# print("x:", x3, "y:", y3, "z:", z3)
-
 # Connect to the PyBullet physics server
 p.connect(p.GUI)
 p.setGravity(0, 0, -98)  # Set gravity along the negative Z-axis
